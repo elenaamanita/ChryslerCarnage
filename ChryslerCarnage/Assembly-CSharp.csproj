@@ -6,7 +6,7 @@
     <ProductVersion>10.0.20506</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <RootNamespace></RootNamespace>
-    <ProjectGuid>{DBB0619E-B2A5-7D95-6297-796F7F90C82A}</ProjectGuid>
+    <ProjectGuid>{1166081F-7ADF-2C66-2BE6-DDB7CD6069A5}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <AssemblyName>Assembly-CSharp</AssemblyName>
@@ -51,6 +51,7 @@
      <Compile Include="Assets\Scripts\UserInput.cs" />
      <Compile Include="Assets\Scripts\WheelOld.cs" />
      <Compile Include="Assets\elena\scripts\CarAudioToy.cs" />
+     <Compile Include="Assets\elena\scripts\HealthBarScript.cs" />
      <Compile Include="Assets\elena\scripts\TestButton.cs" />
      <Compile Include="Assets\elena\scripts\crashsounder.cs" />
      <Compile Include="Assets\elena\scripts\lapcounter.cs" />
@@ -67,7 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
-      <Project>{DB4FB667-F9B9-6A4D-A898-31C471CEE4AF}</Project>      <Name>Assembly-CSharp-firstpass</Name>    </ProjectReference>
+      <Project>{02BED33A-EBBA-40CE-239A-1F75C9F90A1F}</Project>      <Name>Assembly-CSharp-firstpass</Name>    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
