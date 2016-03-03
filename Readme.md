@@ -1,7 +1,6 @@
 ---
 title:Chrysler Carnage
 description: Car Crash Game
-authors:
 Programmers: Alejandro Saura Villanueva,Tin-Tin Chin,Eleni Paskali,Sokol Murturi
 Artists:     Mikko Torvinen, Rob Allen
 tags: master, project Unity 3D framework
