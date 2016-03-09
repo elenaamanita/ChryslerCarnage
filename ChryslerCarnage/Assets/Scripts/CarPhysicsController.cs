@@ -20,6 +20,9 @@ public class CarPhysicsController : MonoBehaviour
     public float[][] gearThresholds;
     public float[] gearRatios = { 2.9f, 2.66f, 2.5f, 2.2f, 2.1f, 2f, 1.9f }; // 0 = reverse
 
+    public AudioClip gears;
+    private AudioSource source;
+
     // member variables ----------------------------------------------
 
     float engineRPM;
@@ -60,21 +63,28 @@ public class CarPhysicsController : MonoBehaviour
         gearThresholds[1] = new float[2];
         gearThresholds[1][0] = 1000;
         gearThresholds[1][1] = 2000;
+        
         gearThresholds[2] = new float[2];
         gearThresholds[2][0] = 1900;
         gearThresholds[2][1] = 3000;
+       
         gearThresholds[3] = new float[2];
         gearThresholds[3][0] = 2900;
         gearThresholds[3][1] = 4000;
+       
         gearThresholds[4] = new float[2];
         gearThresholds[4][0] = 3900;
         gearThresholds[4][1] = 5000;
+        
         gearThresholds[5] = new float[2];
         gearThresholds[5][0] = 4900;
         gearThresholds[5][1] = 6000;
+        source.PlayOneShot(gears);
+
         gearThresholds[6] = new float[2];
         gearThresholds[6][0] = 5900;
         gearThresholds[6][1] = 7000;
+       
 
 
         // Get user input object
@@ -108,8 +118,8 @@ public class CarPhysicsController : MonoBehaviour
     void OnDrawGizmos()
     {
         // Debugging gizmos
-        Gizmos.color = Color.blue;
-        if(weightPosition != null) Gizmos.DrawSphere(transform.parent.TransformPoint(weightPosition), 0.4f);
+        //Gizmos.color = Color.blue;
+       // if(weightPosition != null) Gizmos.DrawSphere(transform.parent.TransformPoint(weightPosition), 0.4f);
     }
 
     void OnGUI()
@@ -183,7 +193,8 @@ public class CarPhysicsController : MonoBehaviour
         float meanAngularVel = (frontLeftWheel.angularVelocity + frontRightWheel.angularVelocity + backLeftWheel.angularVelocity + backRightWheel.angularVelocity) / 4;
         rawEngineRPM = meanAngularVel * gearRatios[1] * differentialRatio * 60.0f / (2.0f * Mathf.PI);
         
-        shiftGear(); // sets the engineRPM based on rawEngineRPM
+        //shiftGear(); // sets the engineRPM based on rawEngineRPM
+
         
 
         // user sets a percentage of the maxEngineTorque
@@ -221,10 +232,24 @@ public class CarPhysicsController : MonoBehaviour
         }
 
         lastVelocity = mRigidbody.velocity;        
-    }   
+    }
+
+    void Awake()
+    {
+        //shiftGear();
+        source = GetComponent<AudioSource>();
+       // GetComponent<AudioSource>().PlayOneShot(gears);
+    }
+
+    void Update()
+    {
+        shiftGear();
+        //source.PlayOneShot(gears);
+    }
 
     void shiftGear()
     {
+        
         float meanSlipRatio = Mathf.Abs(frontLeftWheel.slipRatio + frontRightWheel.slipRatio + backLeftWheel.slipRatio + backRightWheel.slipRatio) / 4;
 
         switch (currentGear)
@@ -237,6 +262,7 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM > gearThresholds[1][1])
                 {                    
                     currentGear = 2;
+                    source.PlayOneShot(gears);
                 }
                     break;
             case 2:
@@ -244,10 +270,12 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM > gearThresholds[2][1])
                 {                    
                     currentGear = 3;
+                    source.PlayOneShot(gears);
                 }
                 if (rawEngineRPM < gearThresholds[2][0])
                 {                    
                     currentGear = 1;
+                    //source.PlayOneShot(gears);
                 }
                 break;
             case 3:
@@ -255,10 +283,12 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM > gearThresholds[3][1])
                 {                    
                     currentGear = 4;
+                    source.PlayOneShot(gears);
                 }
                 if (rawEngineRPM < gearThresholds[3][0])
                 {                    
                     currentGear = 2;
+                    source.PlayOneShot(gears);
                 }
                 break;
             case 4:
@@ -266,10 +296,12 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM > gearThresholds[4][1])
                 {
                     currentGear = 5;
+                    
                 }
                 if (rawEngineRPM < gearThresholds[4][0])
                 {
                     currentGear = 3;
+                    source.PlayOneShot(gears);
                 }
                 break;
             case 5:
@@ -277,10 +309,12 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM > gearThresholds[5][1])
                 {
                     currentGear = 6;
+                    source.PlayOneShot(gears);
                 }
                 if (rawEngineRPM < gearThresholds[5][0])
                 {
                     currentGear = 4;
+                    source.PlayOneShot(gears);
                 }
                 break;
             case 6:
@@ -288,6 +322,7 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM < gearThresholds[6][0])
                 {
                     currentGear = 5;
+                    source.PlayOneShot(gears);
                 }                
                 break;
 
