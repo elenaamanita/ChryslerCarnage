@@ -50,7 +50,7 @@
      <Compile Include="Assets\Scripts\PhysicsWheel.cs" />
      <Compile Include="Assets\Scripts\UserInput.cs" />
      <Compile Include="Assets\Scripts\WheelOld.cs" />
-     <Compile Include="Assets\elena\scripts\CarAudioToy.cs" />
+     <Compile Include="Assets\elena\scripts\CarAudio.cs" />
      <Compile Include="Assets\elena\scripts\HealthBarScript.cs" />
      <Compile Include="Assets\elena\scripts\TestButton.cs" />
      <Compile Include="Assets\elena\scripts\crashsounder.cs" />

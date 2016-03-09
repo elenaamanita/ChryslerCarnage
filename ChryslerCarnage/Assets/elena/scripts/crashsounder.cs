@@ -3,17 +3,19 @@ using System.Collections;
 
 public class crashsounder : MonoBehaviour {
 
-    AudioSource audio;
 
     public AudioClip crashSound;
+    private AudioSource source;
+    
+    void Awake (){
 
-    private void Start()
-    {
-        audio = GetComponent<AudioSource>();
+        source = GetComponent<AudioSource>();
+
     }
 
     void OnCollisionEnter(Collision collision)
     {
-        audio.PlayOneShot(crashSound);
+       
+            source.PlayOneShot(crashSound);
     }
 }
