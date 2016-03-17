@@ -18,12 +18,14 @@ public class CarPhysicsController : MonoBehaviour
     public float minRPM = 1000.0f;
     public float maxRPM = 5000.0f;
     public float[][] gearThresholds;
-    public float[] gearRatios = { 2.9f, 2.66f, 2.5f, 2.2f, 2.1f, 2f, 1.9f }; // 0 = reverse
+    public float[] gearRatios = { 2.9f, 2.66f, 1.78f, 1.3f, 1f, 1.75f, 0.5f }; // 0 = reverse
 
     public AudioClip gears;
     private AudioSource source;
 
     // member variables ----------------------------------------------
+
+    float velocity_forward;
 
     float engineRPM;
     float rawEngineRPM;
@@ -49,42 +51,44 @@ public class CarPhysicsController : MonoBehaviour
     PhysicsWheel backRightWheel;
 
     // Axis
-    Transform FrontAxis;
-    Transform RearAxis;
+    Transform FrontAxisRight;
+    Transform FrontAxisLeft;
+    Transform RearAxisRight;
+    Transform RearAxisLeft;
     float distanceBetweenWheels;
 
     // Integration variables
     Vector3 lastVelocity;
+
+    void Awake()
+    {
+        //shiftGear();
+        source = GetComponent<AudioSource>();
+        // GetComponent<AudioSource>().PlayOneShot(gears);
+    }
 
     void Start ()
     {
         //gear thresholds
         gearThresholds = new float[7][];
         gearThresholds[1] = new float[2];
-        gearThresholds[1][0] = 1000;
-        gearThresholds[1][1] = 2000;
-        
+        gearThresholds[1][0] = 500;
+        gearThresholds[1][1] = 1000;
         gearThresholds[2] = new float[2];
-        gearThresholds[2][0] = 1900;
-        gearThresholds[2][1] = 3000;
-       
+        gearThresholds[2][0] = 1000;
+        gearThresholds[2][1] = 2000;
         gearThresholds[3] = new float[2];
-        gearThresholds[3][0] = 2900;
-        gearThresholds[3][1] = 4000;
-       
+        gearThresholds[3][0] = 2000;
+        gearThresholds[3][1] = 3000;
         gearThresholds[4] = new float[2];
-        gearThresholds[4][0] = 3900;
-        gearThresholds[4][1] = 5000;
-        
+        gearThresholds[4][0] = 3000;
+        gearThresholds[4][1] = 4000;
         gearThresholds[5] = new float[2];
-        gearThresholds[5][0] = 4900;
-        gearThresholds[5][1] = 6000;
-        source.PlayOneShot(gears);
-
+        gearThresholds[5][0] = 4000;
+        gearThresholds[5][1] = 4600;
         gearThresholds[6] = new float[2];
-        gearThresholds[6][0] = 5900;
+        gearThresholds[6][0] = 4600;
         gearThresholds[6][1] = 7000;
-       
 
 
         // Get user input object
@@ -96,17 +100,27 @@ public class CarPhysicsController : MonoBehaviour
         mRigidbody.centerOfMass = centerOfMass;
 
         // Find all car parts
-        FrontAxis = transform.parent.FindChild("FrontAxis");
-        RearAxis = transform.parent.FindChild("RearAxis");
+
+        FrontAxisRight = transform.parent.FindChild("FrontAxisRight");
+        RearAxisRight = transform.parent.FindChild("RearAxisRight");
+
         frontLeftWheel = transform.parent.FindChild("FrontLeftWheel").GetComponent<PhysicsWheel>();
         frontRightWheel = transform.parent.FindChild("FrontRightWheel").GetComponent<PhysicsWheel>();
         backLeftWheel = transform.parent.FindChild("BackLeftWheel").GetComponent<PhysicsWheel>();
         backRightWheel = transform.parent.FindChild("BackRightWheel").GetComponent<PhysicsWheel>();
 
-        frontLeftWheel.axisRigidBody = FrontAxis.GetComponent<Rigidbody>();
-        frontRightWheel.axisRigidBody = FrontAxis.GetComponent<Rigidbody>();
-        backLeftWheel.axisRigidBody = RearAxis.GetComponent<Rigidbody>();
-        backRightWheel.axisRigidBody = RearAxis.GetComponent<Rigidbody>();
+        frontLeftWheel.wheelAnimator = transform.FindChild("l_frontWheel_system").GetComponent<Animator>();
+        frontRightWheel.wheelAnimator = transform.FindChild("r_frontWheel_system").GetComponent<Animator>();
+        backLeftWheel.wheelAnimator = transform.FindChild("l_backWheel_system").GetComponent<Animator>();
+        backRightWheel.wheelAnimator = transform.FindChild("r_backWheel_system").GetComponent<Animator>();
+
+        frontLeftWheel.steeringBone = transform.FindChild("l_frontWheel_system").FindChild("joint2");
+        frontRightWheel.steeringBone = transform.FindChild("r_frontWheel_system").FindChild("joint2");
+
+        frontLeftWheel.wheelGeometry = transform.FindChild("l_frontWheel_system").transform.FindChild("wheelGeometry");
+        frontRightWheel.wheelGeometry = transform.FindChild("r_frontWheel_system").transform.FindChild("wheelGeometry");
+        backLeftWheel.wheelGeometry = transform.FindChild("l_backWheel_system").transform.FindChild("wheelGeometry");
+        backRightWheel.wheelGeometry = transform.FindChild("r_backWheel_system").transform.FindChild("wheelGeometry");
 
 
         distanceBetweenWheels = (transform.parent.FindChild("FrontLeftWheel").position - transform.parent.FindChild("FrontRightWheel").position).magnitude;
@@ -118,13 +132,12 @@ public class CarPhysicsController : MonoBehaviour
     void OnDrawGizmos()
     {
         // Debugging gizmos
-        //Gizmos.color = Color.blue;
-       // if(weightPosition != null) Gizmos.DrawSphere(transform.parent.TransformPoint(weightPosition), 0.4f);
+        Gizmos.color = Color.blue;
+        if(weightPosition != null) Gizmos.DrawSphere(transform.parent.TransformPoint(weightPosition), 0.4f);
     }
 
     void OnGUI()
-    {
-        float velocity_forward = Vector3.Dot(mRigidbody.velocity, transform.forward);
+    {      
 
         GUI.Box(new Rect(10, 10, 300, 200), "Debug Data");
         GUI.TextArea(new Rect(15, 30, 290, 20), "Forward velocity = " + velocity_forward * 3.6f + " km/h");
@@ -142,16 +155,18 @@ public class CarPhysicsController : MonoBehaviour
 
     void FixedUpdate ()
     {
+        velocity_forward = Vector3.Dot(mRigidbody.velocity, transform.forward);
 
-       
         // calculate weight dynamic transfer ----------------------
 
         Vector3 CenterOfMassAligned = centerOfMass; // put the three objects in the same plane (y=0)
         CenterOfMassAligned.y = 0.0f;
-        Vector3 FrontAxisAligned = FrontAxis.localPosition;
-        FrontAxisAligned.y = 0.0f;
-        Vector3 RearAxisAligned = RearAxis.localPosition;
-        RearAxisAligned.y = 0.0f;
+        Vector3 FrontAxisAligned = FrontAxisRight.localPosition;
+        //FrontAxisAligned.y = 0.0f;
+        FrontAxisAligned.x = 0.0f;
+        Vector3 RearAxisAligned = RearAxisRight.localPosition;
+        //RearAxisAligned.y = 0.0f;
+        RearAxisAligned.x = 0.0f;
 
         float distanceToFront = (CenterOfMassAligned - FrontAxisAligned).magnitude;
         float distanceToRear = (CenterOfMassAligned - RearAxisAligned).magnitude;
@@ -178,7 +193,7 @@ public class CarPhysicsController : MonoBehaviour
         float rightWeightPercent = Mathf.Clamp01(rightWeight / normalWeight);
         float leftWeightPercent = Mathf.Clamp01(leftWeight / normalWeight);
 
-        weightPosition = (FrontAxis.localPosition * frontWeightPercent + RearAxis.localPosition * rearWeightPercent);        
+        weightPosition = (FrontAxisAligned * frontWeightPercent + RearAxisAligned * rearWeightPercent);        
         weightPosition += ((distanceBetweenWheels) * (rightWeightPercent) - (distanceBetweenWheels) * (leftWeightPercent)) * new Vector3(1,0,0) * 5;
 
         // transfer the weight to the wheels
@@ -194,7 +209,6 @@ public class CarPhysicsController : MonoBehaviour
         rawEngineRPM = meanAngularVel * gearRatios[1] * differentialRatio * 60.0f / (2.0f * Mathf.PI);
         
         //shiftGear(); // sets the engineRPM based on rawEngineRPM
-
         
 
         // user sets a percentage of the maxEngineTorque
@@ -234,22 +248,13 @@ public class CarPhysicsController : MonoBehaviour
         lastVelocity = mRigidbody.velocity;        
     }
 
-    void Awake()
-    {
-        //shiftGear();
-        source = GetComponent<AudioSource>();
-       // GetComponent<AudioSource>().PlayOneShot(gears);
-    }
-
     void Update()
     {
-        shiftGear();
-        //source.PlayOneShot(gears);
+        shiftGear();        
     }
 
     void shiftGear()
     {
-        
         float meanSlipRatio = Mathf.Abs(frontLeftWheel.slipRatio + frontRightWheel.slipRatio + backLeftWheel.slipRatio + backRightWheel.slipRatio) / 4;
 
         switch (currentGear)
@@ -266,7 +271,7 @@ public class CarPhysicsController : MonoBehaviour
                 }
                     break;
             case 2:
-                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[2][0] + 1000) * meanSlipRatio * gearRatios[currentGear], minRPM, maxRPM) ;
+                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[2][0] + 1000) * meanSlipRatio, minRPM, maxRPM) ;
                 if (rawEngineRPM > gearThresholds[2][1])
                 {                    
                     currentGear = 3;
@@ -275,11 +280,11 @@ public class CarPhysicsController : MonoBehaviour
                 if (rawEngineRPM < gearThresholds[2][0])
                 {                    
                     currentGear = 1;
-                    //source.PlayOneShot(gears);
+                    source.PlayOneShot(gears);
                 }
                 break;
             case 3:
-                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[3][0] + 1000) * meanSlipRatio * gearRatios[currentGear], minRPM, maxRPM);
+                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[3][0] + 1000) * meanSlipRatio, minRPM, maxRPM);
                 if (rawEngineRPM > gearThresholds[3][1])
                 {                    
                     currentGear = 4;
@@ -292,11 +297,11 @@ public class CarPhysicsController : MonoBehaviour
                 }
                 break;
             case 4:
-                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[4][0] + 1000) * meanSlipRatio * gearRatios[currentGear], minRPM, maxRPM);
+                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[4][0] + 1000) * meanSlipRatio, minRPM, maxRPM);
                 if (rawEngineRPM > gearThresholds[4][1])
                 {
                     currentGear = 5;
-                    
+                    source.PlayOneShot(gears);
                 }
                 if (rawEngineRPM < gearThresholds[4][0])
                 {
@@ -305,7 +310,7 @@ public class CarPhysicsController : MonoBehaviour
                 }
                 break;
             case 5:
-                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[5][0] + 1000) * meanSlipRatio * gearRatios[currentGear] *1.5f, minRPM, maxRPM);
+                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[5][0] + 1000) * meanSlipRatio, minRPM, maxRPM);
                 if (rawEngineRPM > gearThresholds[5][1])
                 {
                     currentGear = 6;
@@ -318,7 +323,7 @@ public class CarPhysicsController : MonoBehaviour
                 }
                 break;
             case 6:
-                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[6][0] + 1000) * meanSlipRatio * gearRatios[currentGear] * 1.5f, minRPM, maxRPM);
+                engineRPM = Mathf.Clamp((rawEngineRPM - gearThresholds[6][0] + 1000) * meanSlipRatio, minRPM, maxRPM);
                 if (rawEngineRPM < gearThresholds[6][0])
                 {
                     currentGear = 5;

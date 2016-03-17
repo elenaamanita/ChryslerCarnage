@@ -16,18 +16,24 @@ public class PhysicsWheel : MonoBehaviour
     public AnimationCurve velocityToSideSlip;
     public AnimationCurve slipToSideSlip;
     public AnimationCurve maxSteerAngleCurve;
-    
 
+    // animation adjustment params
+    public float upAmplitude = 0.5f;
+    public float downAmplitude = 0.5f;
 
-    public float directionDeviationCorrection = -0.01f;
 
     // exposed to be set by carController
+    public Animator wheelAnimator;
     public float supportedWeight;
     public float angularVelocity;
     public float driveTorque;
     public float brakeTorque;
     public float wheelRadius = 0.7f;
     public Rigidbody axisRigidBody;
+    public Rigidbody body;
+    public Transform steeringBone = null;
+    public Transform wheelGeometry = null;
+
 
 
     // debug
@@ -39,9 +45,10 @@ public class PhysicsWheel : MonoBehaviour
     public float latForce_velocityFactor;
     public float sideSlipAngleRatio;
     public float sideSlipAngle;
+    public float wheelHeight;
 
     Rigidbody mRigidbody;
-    Transform wheelGeometry;
+    
 
     // User input object
     InputInterface input;
@@ -60,12 +67,28 @@ public class PhysicsWheel : MonoBehaviour
 
     bool goingBackwards = true;
 
-
+    
+    float restHeight;
+    float lastHeight;
 
     void Start ()
     {
         mRigidbody = gameObject.GetComponent<Rigidbody>();
-        wheelGeometry = transform.FindChild("wheelGeometry");
+        //wheelGeometry = transform.FindChild("wheelGeometry");
+
+        if (gameObject.GetComponent<FixedJoint>() != null)
+        {
+            axisRigidBody = gameObject.GetComponent<FixedJoint>().connectedBody;
+        }
+        else if (gameObject.GetComponent<HingeJoint>() != null)
+        {
+            axisRigidBody = gameObject.GetComponent<HingeJoint>().connectedBody;
+        }
+
+        body = axisRigidBody.GetComponent<ConfigurableJoint>().connectedBody;        
+
+        restHeight = body.transform.InverseTransformPoint(transform.position).y;
+        lastHeight = restHeight;
 
         // Get user input object
         input = transform.parent.gameObject.GetComponent<InputInterface>();
@@ -84,7 +107,8 @@ public class PhysicsWheel : MonoBehaviour
     }
 
     void FixedUpdate ()
-    {
+    {        
+
         Vector3 velocity = mRigidbody.velocity;
         tangentialVelocity = transform.InverseTransformDirection(velocity).z;
         latVelocity = transform.InverseTransformDirection(velocity).y;
@@ -109,7 +133,7 @@ public class PhysicsWheel : MonoBehaviour
         tractionForce = (-tractionTorque / wheelRadius);       
 
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, -transform.right, out hit) && (hit.distance) < wheelRadius // if the wheel is touching the ground
+        if (Physics.Raycast(transform.position, -transform.right, out hit) && (hit.distance) < wheelRadius * 2f // if the wheel is touching the ground
             && Vector3.Angle(transform.right, -normal)>120) //and the angle of collision is reasonable
         {
             #region particularCases
@@ -200,7 +224,7 @@ public class PhysicsWheel : MonoBehaviour
                 float maxLateralForce =
                     (
                     (Mathf.Abs(latVelocity) * Mathf.Sign(latVelocity))
-                    //* (supportedWeight)
+                    //* (supportedWeight)*2
                     * mRigidbody.mass*9.8f
                     * Mathf.Clamp(tangentialVelocity / 8, 1, float.MaxValue)
                     * latForce_slipFactor 
@@ -211,25 +235,25 @@ public class PhysicsWheel : MonoBehaviour
 
                 lateralForce = direction * maxLateralForce; //* sideSlipToForce.Evaluate(sideSlipAngle);
             }
-            else if ((transform.parent.GetComponent<Rigidbody>().velocity.magnitude) < 10f) // low speed turning
+            else if ((transform.parent.GetComponent<Rigidbody>().velocity.magnitude) <= 10f) // low speed turning
             {
                 lateralForce =
                     (
-                    (1 + Mathf.Abs(latVelocity) * 1.5f * Mathf.Sign(latVelocity))
-                    //* (supportedWeight)
+                    (Mathf.Abs(latVelocity) * 1.5f * Mathf.Sign(latVelocity))
+                    //* (supportedWeight)*2
                     * Mathf.Clamp(tangentialVelocity / 8, 1, float.MaxValue)
                     * mRigidbody.mass*9.8f
-                    * 4                    
+                    * 2                    
                     ) * direction;
 
-                mRigidbody.drag = 5;
+                //mRigidbody.drag = 5;
             }
-            if (velocity.magnitude < 2 && !goingBackwards)
-            {
-                // if the speed is too low just stop the car with Unity's drag
-                lateralForce = Vector3.zero;
-                mRigidbody.drag = 40;
-            }
+            //if (velocity.magnitude < 0.1f && !goingBackwards)
+            //{
+            //    // if the speed is too low just stop the car with Unity's drag
+            //    //lateralForce = Vector3.zero;
+            //    mRigidbody.drag = 40;
+            //}
 
             // Apply force
             if ((tangentialVelocity) > 0f) // going forward
@@ -250,7 +274,9 @@ public class PhysicsWheel : MonoBehaviour
 
             angularVelocity = slipRatio * tangentialVelocity / wheelRadius
                 + userThrottleWeight.Evaluate(input.userThrottle) * 20 / Mathf.Clamp(tangentialVelocity, 0.2f, 9999); // simulation of slip when 
-            wheelGeometry.Rotate(0.0f, -angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, 0.0f);
+
+            if (wheelGeometry != null)
+                wheelGeometry.Rotate(angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, 0.0f, 0.0f);
 
             #endregion
 
@@ -275,7 +301,8 @@ public class PhysicsWheel : MonoBehaviour
                 angularVelocity = userThrottleWeight.Evaluate(input.userThrottle) * 50;
                 slipRatio = 2;
             }
-            wheelGeometry.Rotate(0.0f, -angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, 0.0f);
+            if (wheelGeometry != null)
+                wheelGeometry.Rotate(angularVelocity * Mathf.Rad2Deg * Time.fixedDeltaTime, 0.0f, 0.0f);
             #endregion
         }
 
@@ -291,15 +318,50 @@ public class PhysicsWheel : MonoBehaviour
             joint.spring = spring;
         }
 
-        #endregion      
+        #endregion
 
-                
+        #region animation
+
+        if (wheelAnimator != null)
+        {
+            float height = body.transform.InverseTransformPoint(transform.position).y;
+            wheelHeight = height - restHeight;
+            Mathf.Clamp(wheelHeight, -downAmplitude, upAmplitude);
+            //if (wheelHeight > 0)
+            {
+                wheelHeight /= upAmplitude;
+                wheelHeight += downAmplitude/(upAmplitude+downAmplitude);
+            }
+            //else
+            //{
+            //    wheelHeight /= downAmplitude;
+            //    wheelHeight += upAmplitude / (upAmplitude + downAmplitude);
+            //}         
+            
+            Mathf.Clamp01(wheelHeight);
+            
+            // Apply the animation time in LateUpdate to avoid Jerkyness and here to avoid desync with the physics in collisions.
+            wheelAnimator.Play(Animator.StringToHash("UpDown"), 0, 1-wheelHeight);
+            lastHeight = wheelHeight;
+        }
+
+        #endregion
+
+
 
         // debug ----------------------------------------------------------------------
-        
+
         slipColor = new Vector4(1, 1 - (slipRatio - 1), 1 - (slipRatio - 1), 1);
         tractionColor = new Vector4(1 - weightFactor, 1 - weightFactor, 1, 1);
 
+    }
+
+    void LateUpdate()
+    {
+        if (wheelAnimator != null)
+        {
+            wheelAnimator.Play(Animator.StringToHash("UpDown"), 0, 1 - wheelHeight);
+        }
     }
 
     void OnCollisionStay(Collision collision)
