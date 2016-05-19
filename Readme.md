@@ -20,13 +20,8 @@ The idea of the team was to have a sound based on the song of Led Zeppelin-Black
 
 The small sound effects were created in real time by recording the sound and edited in the music program called Audacity. Some of them were made and by me for example the sound bump of the car in the beginning was created by hitting the laptop with my hand and recording that sound.
 
-The main script for the audio when the car is accelerating: 
+##The main script for the audio when the car is accelerating: 
 
-using System;
-using UnityEngine;
-using Random = UnityEngine.Random;
-
-    [RequireComponent(typeof(CarPhysicsController))]
     public class CarAudio : MonoBehaviour
     {
 
@@ -123,10 +118,8 @@ using Random = UnityEngine.Random;
         }
     }
 
-The main script for the car when colliding (bump sound):
+##The main script for the car when colliding (bump sound):
 
-using UnityEngine;
-using System.Collections;
 
 public class crashsounder : MonoBehaviour {
 
@@ -148,11 +141,7 @@ public class crashsounder : MonoBehaviour {
 ##Health bar
 
 All the tiles were created in Photoshop and imported to Unity 3D. The idea of the tiles was to be minimal but to fit also with the environment of the game. The health bar is attached to the body of the car and the scripting is that every time the car is being damaged the health bar is going to reduce.
-using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
 
-public class HealthBarScript : MonoBehaviour {
 
 	public RectTransform healthTransform;
 	private float yPos;
@@ -253,6 +242,7 @@ public class HealthBarScript : MonoBehaviour {
 ##Gears
 
 After creating the scripting for the gears I had to put the sound that every time you change a gear you listen the sound:
+
 void shiftGear()
     {
         float meanSlipRatio = Mathf.Abs(frontLeftWheel.slipRatio + frontRightWheel.slipRatio + backLeftWheel.slipRatio + backRightWheel.slipRatio) / 4;
@@ -342,11 +332,6 @@ void shiftGear()
 ##GUI  Window
 
 First I created the Canvas by importing the Main menu tiles by title , animated the tiles so every time you want to click a tile they either hover or moving in the space. The main scripting for the Panel: 
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using System.Collections;
-using System.Collections.Generic;
 
 public class PanelManager : MonoBehaviour {
 
@@ -442,9 +427,6 @@ public class PanelManager : MonoBehaviour {
 
 The tiles are connecting with a test_button script where on click you are being send to the wanted action :
 
-using UnityEngine;
-using System.Collections;
-
 public class TestButton : MonoBehaviour {
   
 
@@ -483,6 +465,7 @@ The credits picture was edited in Photoshop and imported in Unity 3D.
 
 
 ##Problems I faced
+
 In the beginning I found problems to make the gears when shifting to work properly when changing from scale one to six and playing the sound correctly. This was overcome by asking the team about their work and what  I am doing wrong. The outcome was that in the Unity 3D the script  was attached in a different position to the body of the car.
 
 Another problem faced was when the car is colliding. Every time the car is colliding with the environment there was the sound of car crash playing although it was not colliding with the car. After noticing I changed the sound when colliding with the environment and when colliding with the cars.
@@ -490,14 +473,11 @@ One more was to import the mesh of the cars in order to put them in the rotator 
 Last the health bar is not attached correctly as the scripting is not working during the damage of the car. This problem I will try to solve it when we will have merged all the files and ask help from the rest of the programmers.
 
 ##Future changes
+
 In the month we have I would like to import both of the updated model cars in the Gui Window and when selecting to read the possibilities they have. Moreover the background of the Gui Window I want to import all the pictures of the cities that were created from our artists and displaying like a movie.
 In the main body I want to import more Gui features like a speed meter while racing.
 
-##Conclusion
-I would like to thank all my team as it has been a great corporation by communicating and trying to solve all the problems. Bigger thanks to Alejandro who did a great job by running the team and helping us with his knowledge.
 
-
-##Car Crash Game
 
 
 
