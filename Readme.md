@@ -27,8 +27,8 @@ The small sound effects were created in real time by recording the sound and edi
 
         public AudioClip AccelClip;
  
-        public float pitchMultiplier = 1f;
-        public float lowPitchMin = 1f;
+        public float pitchMultiplier = 6.25f;
+        public float lowPitchMin = 0.61f;
         public float lowPitchMax = 6f;
         public float highPitchMultiplier = 0.25f;
         public float maxRolloffDistance = 500;
