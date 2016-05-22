@@ -53,7 +53,7 @@ public class HealthBarScript : MonoBehaviour {
 		healthText.text = "Health: " + currentHealth;
 		currentXValue = MapValues(currentHealth, 0, maxHealth, minXValue, maxXValue);
 		
-		// Transform health bar into correct osition
+		// Transform health bar into correct position
 		healthTransform.position = new Vector3(currentXValue, yPos); 
 		
 		// If > 50% health, then transform R
