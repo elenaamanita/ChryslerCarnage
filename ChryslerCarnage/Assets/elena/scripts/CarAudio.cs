@@ -79,7 +79,7 @@ using Random = UnityEngine.Random;
             // create the new audio source component on the game object and set up its properties
             AudioSource source = gameObject.AddComponent<AudioSource>();
             source.clip = clip;
-            source.volume = 0;
+            source.volume = 10;
             source.loop = true;
 
             // start the clip from a random point
