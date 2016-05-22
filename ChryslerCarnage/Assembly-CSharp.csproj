@@ -60,7 +60,6 @@
      <Compile Include="Assets\elena\scripts\TestButton.cs" />
      <Compile Include="Assets\elena\scripts\TiltWindow.cs" />
      <Compile Include="Assets\elena\scripts\crashsounder.cs" />
-     <Compile Include="Assets\elena\scripts\sendhitmes.cs" />
      <None Include="Assets\Standard Assets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
      <None Include="Assets\elena\Fonts\Jupiter\LICENSE.txt" />
      <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />

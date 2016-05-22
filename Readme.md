@@ -463,6 +463,8 @@ I created the animation of one of the models of the car in the Main Menu. You ca
 
 The credits picture was edited in Photoshop and imported in Unity 3D.
 
+You can quit the game when you build and run the project.
+
 
 ##Problems I faced
 
