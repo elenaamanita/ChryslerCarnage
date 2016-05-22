@@ -46,7 +46,6 @@ public class HealthBarScript : MonoBehaviour {
 	void Update () {
 
         HandleHealth();
-	
 	}
 
 	private void HandleHealth() {
